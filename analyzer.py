@@ -4,6 +4,13 @@ import requests
 from pathlib import Path
 
 api_url = sys.argv[1].rstrip("/")
+
+try:
+    print("Acordando API...")
+    requests.get(f"{api_url}/", timeout=60)
+except Exception as e:
+    print(f"Aviso: health check falhou, tentando análise mesmo assim: {e}")
+
 java_files = list(Path(".").rglob("*.java"))
 
 scores = []
@@ -23,7 +30,7 @@ else:
                 "filename": str(file),
                 "content": content
             },
-            timeout=30
+            timeout=90
         )
 
         response.raise_for_status()
