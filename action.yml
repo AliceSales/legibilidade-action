@@ -1,0 +1,18 @@
+name: "Análise de Legibilidade"
+description: "Analisa arquivos Java usando uma API de modelo hospedada"
+
+inputs:
+  api-url:
+    description: "URL da API do modelo"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Instalar dependências Python
+      shell: bash
+      run: pip install requests
+
+    - name: Rodar análise
+      shell: bash
+      run: python ${{ github.action_path }}/analyzer.py "${{ inputs.api-url }}"
