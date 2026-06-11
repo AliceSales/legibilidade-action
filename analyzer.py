@@ -4,76 +4,64 @@ import requests
 from pathlib import Path
 
 api_url = sys.argv[1].rstrip("/")
-
 java_files = list(Path(".").rglob("*.java"))
-
-summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
-
-def add_summary(text):
-    if summary_path:
-        with open(summary_path, "a", encoding="utf-8") as f:
-            f.write(text + "\n")
-
-if not java_files:
-    print("Nenhum arquivo Java encontrado.")
-    add_summary("# Análise de Legibilidade\n\nNenhum arquivo Java encontrado.")
-    sys.exit(0)
-
-print(f"Arquivos Java encontrados: {len(java_files)}")
 
 scores = []
 results = []
 
-for file in java_files:
-    content = file.read_text(encoding="utf-8", errors="ignore")
+if not java_files:
+    report = "## 🤖 Análise de Legibilidade\n\nNenhum arquivo Java encontrado."
+    average = 0
+    status = "Sem arquivos"
+else:
+    for file in java_files:
+        content = file.read_text(encoding="utf-8", errors="ignore")
 
-    response = requests.post(
-        f"{api_url}/analyze",
-        json={
-            "filename": str(file),
-            "content": content
-        },
-        timeout=30
-    )
+        response = requests.post(
+            f"{api_url}/analyze",
+            json={
+                "filename": str(file),
+                "content": content
+            },
+            timeout=30
+        )
 
-    response.raise_for_status()
-    result = response.json()
+        response.raise_for_status()
+        result = response.json()
 
-    scores.append(result["score"])
-    results.append(result)
+        scores.append(result["score"])
+        results.append(result)
 
-    print("----------------------------------")
-    print(f"Arquivo: {result['filename']}")
-    print(f"Nota: {result['score']}")
-    print(f"Classificação: {result['label']}")
+    average = sum(scores) / len(scores)
+    status = "Aprovado ✅" if average >= 7 else "Reprovado ❌"
 
-    if result["warnings"]:
-        print("Avisos:")
-        for warning in result["warnings"]:
-            print(f"- {warning}")
+    lines = []
+    lines.append("## 🤖 Análise de Legibilidade")
+    lines.append("")
+    lines.append(f"**Média final:** `{average:.2f}/10`")
+    lines.append(f"**Status:** {status}")
+    lines.append("")
+    lines.append("| Arquivo | Nota | Classificação | Avisos |")
+    lines.append("|---|---:|---|---|")
 
-average = sum(scores) / len(scores)
-status = "Aprovado" if average >= 7 else "Reprovado"
+    for result in results:
+        warnings = "<br>".join(result["warnings"]) if result["warnings"] else "Nenhum"
+        lines.append(
+            f"| `{result['filename']}` | {result['score']} | {result['label']} | {warnings} |"
+        )
 
-print("==================================")
-print(f"Média final do projeto: {average:.2f}")
-print(f"Status: {status}")
+    report = "\n".join(lines)
 
-add_summary("# Análise de Legibilidade\n")
-add_summary(f"**Média final:** {average:.2f}/10")
-add_summary(f"**Status:** {status}\n")
+print(report)
 
-add_summary("| Arquivo | Nota | Classificação | Avisos |")
-add_summary("|---|---:|---|---|")
+with open("legibilidade-report.md", "w", encoding="utf-8") as f:
+    f.write(report)
 
-for result in results:
-    warnings = "<br>".join(result["warnings"]) if result["warnings"] else "Nenhum"
-    add_summary(
-        f"| `{result['filename']}` | {result['score']} | {result['label']} | {warnings} |"
-    )
+github_output = os.environ.get("GITHUB_OUTPUT")
+if github_output:
+    with open(github_output, "a", encoding="utf-8") as f:
+        f.write(f"average={average:.2f}\n")
+        f.write(f"status={status}\n")
 
 if average < 7:
-    print("Projeto reprovado na análise de legibilidade.")
     sys.exit(1)
-
-print("Projeto aprovado na análise de legibilidade.")

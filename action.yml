@@ -6,6 +6,14 @@ inputs:
     description: "URL da API do modelo"
     required: true
 
+outputs:
+  average:
+    description: "Nota média final"
+    value: ${{ steps.analysis.outputs.average }}
+  status:
+    description: "Status da análise"
+    value: ${{ steps.analysis.outputs.status }}
+
 runs:
   using: "composite"
   steps:
@@ -14,5 +22,6 @@ runs:
       run: pip install requests
 
     - name: Rodar análise
+      id: analysis
       shell: bash
       run: python ${{ github.action_path }}/analyzer.py "${{ inputs.api-url }}"
