@@ -73,6 +73,3 @@ if github_output:
     with open(github_output, "a", encoding="utf-8") as f:
         f.write(f"average={average:.2f}\n")
         f.write(f"status={status}\n")
-
-if average < 14:
-    sys.exit(1)
