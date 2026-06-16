@@ -47,7 +47,7 @@ public class AnalyzerAction {
         StringBuilder report = new StringBuilder();
 
         report.append("## 🤖 Análise de Legibilidade\n\n");
-        report.append("| Arquivo | Nota /10 | Sobrecarga /20 | Modelo /5 | Classificação |\n");
+        report.append("| Arquivo | Nota /10 | Sobrecarga /20 | Classificação |\n");
         report.append("|---|---:|---:|---:|---|\n");
 
         for (Path file : javaFiles) {
@@ -83,8 +83,6 @@ public class AnalyzerAction {
                     .append(String.format("%.2f", score))
                     .append(" | ")
                     .append(String.format("%.2f", sobrecarga))
-                    .append(" | ")
-                    .append(String.format("%.2f", notaModelo))
                     .append(" | ")
                     .append(label)
                     .append(" |\n");
