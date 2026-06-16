@@ -1,27 +1,24 @@
 name: "Análise de Legibilidade"
-description: "Analisa arquivos Java usando uma API de modelo hospedada"
+description: "Analisa arquivos Java com JavaParser e envia features para API"
 
 inputs:
   api-url:
     description: "URL da API do modelo"
     required: true
 
-outputs:
-  average:
-    description: "Nota média final"
-    value: ${{ steps.analysis.outputs.average }}
-  status:
-    description: "Status da análise"
-    value: ${{ steps.analysis.outputs.status }}
-
 runs:
   using: "composite"
   steps:
-    - name: Instalar dependências Python
+    - name: Configurar Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Buildar Action Java
       shell: bash
-      run: pip install requests
+      run: mvn -f "${{ github.action_path }}/pom.xml" clean package -DskipTests
 
     - name: Rodar análise
-      id: analysis
       shell: bash
-      run: python ${{ github.action_path }}/analyzer.py "${{ inputs.api-url }}"
+      run: java -jar "${{ github.action_path }}/target/legibilidade-action-1.0.0.jar" "${{ inputs.api-url }}"
