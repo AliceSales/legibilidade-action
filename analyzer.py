@@ -42,6 +42,8 @@ else:
         result["score"] = score
         result["warnings"] = result.get("warnings", [])
         result["label"] = result.get("label", "Sem classificação")
+        result["pontuacao_sobrecarga"] = result.get("pontuacao_sobrecarga", None)
+        result["nota_modelo_1_a_5"] = result.get("nota_modelo_1_a_5", None)
 
         results.append(result)
 
@@ -54,13 +56,26 @@ else:
     lines.append(f"**Média final:** `{average:.2f}/10`")
     lines.append(f"**Status:** {status}")
     lines.append("")
-    lines.append("| Arquivo | Nota | Classificação | Avisos |")
-    lines.append("|---|---:|---|---|")
+    lines.append("| Arquivo | Nota /10 | Sobrecarga /20 | Modelo /5 | Classificação | Avisos |")
+    lines.append("|---|---:|---:|---:|---|---|")
 
     for result in results:
         warnings = "<br>".join(result["warnings"]) if result["warnings"] else "Nenhum"
+
+        sobrecarga = (
+            f"{float(result['pontuacao_sobrecarga']):.2f}"
+            if result["pontuacao_sobrecarga"] is not None
+            else "-"
+        )
+
+        nota_modelo = (
+            f"{float(result['nota_modelo_1_a_5']):.2f}"
+            if result["nota_modelo_1_a_5"] is not None
+            else "-"
+        )
+
         lines.append(
-            f"| `{result['filename']}` | {result['score']:.2f} | {result['label']} | {warnings} |"
+            f"| `{result['filename']}` | {result['score']:.2f} | {sobrecarga} | {nota_modelo} | {result['label']} | {warnings} |"
         )
 
     report = "\n".join(lines)
