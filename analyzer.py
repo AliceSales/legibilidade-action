@@ -36,16 +36,20 @@ else:
         response.raise_for_status()
         result = response.json()
 
-        scores.append(result["score"])
+        score = float(result.get("score", 0))
+        scores.append(score)
+        result["score"] = score
+        result["warnings"] = result.get("warnings", [])
+        result["label"] = result.get("label", "Sem classificação")
         results.append(result)
 
     average = sum(scores) / len(scores)
-    status = "Aprovado ✅" if average >= 7 else "Reprovado ❌"
+    status = "Aprovado ✅" if average >= 14 else "Reprovado ❌"
 
     lines = []
     lines.append("## 🤖 Análise de Legibilidade")
     lines.append("")
-    lines.append(f"**Média final:** `{average:.2f}/10`")
+    lines.append(f"**Média final:** `{average:.2f}/20`")
     lines.append(f"**Status:** {status}")
     lines.append("")
     lines.append("| Arquivo | Nota | Classificação | Avisos |")
@@ -70,5 +74,5 @@ if github_output:
         f.write(f"average={average:.2f}\n")
         f.write(f"status={status}\n")
 
-if average < 7:
+if average < 14:
     sys.exit(1)
