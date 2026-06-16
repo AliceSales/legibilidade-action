@@ -38,18 +38,20 @@ else:
 
         score = float(result.get("score", 0))
         scores.append(score)
+
         result["score"] = score
         result["warnings"] = result.get("warnings", [])
         result["label"] = result.get("label", "Sem classificação")
+
         results.append(result)
 
     average = sum(scores) / len(scores)
-    status = "Aprovado ✅" if average >= 14 else "Reprovado ❌"
+    status = "Aprovado ✅" if average >= 7 else "Reprovado ❌"
 
     lines = []
     lines.append("## 🤖 Análise de Legibilidade")
     lines.append("")
-    lines.append(f"**Média final:** `{average:.2f}/20`")
+    lines.append(f"**Média final:** `{average:.2f}/10`")
     lines.append(f"**Status:** {status}")
     lines.append("")
     lines.append("| Arquivo | Nota | Classificação | Avisos |")
@@ -58,7 +60,7 @@ else:
     for result in results:
         warnings = "<br>".join(result["warnings"]) if result["warnings"] else "Nenhum"
         lines.append(
-            f"| `{result['filename']}` | {result['score']} | {result['label']} | {warnings} |"
+            f"| `{result['filename']}` | {result['score']:.2f} | {result['label']} | {warnings} |"
         )
 
     report = "\n".join(lines)
